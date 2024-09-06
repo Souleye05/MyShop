@@ -1,161 +1,93 @@
 <?php
-
+ 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
+use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\StoreArticleRequest;
 use App\Http\Requests\BulkUpdateArticleRequest;
+use App\Services\ArticleServiceImpl;
 use Illuminate\Http\Request;
 
 class ArticleController extends Controller
 {
+    protected $articleService;
+
+    public function __construct(ArticleServiceImpl $articleService)
+    {
+        $this->articleService = $articleService;
+    }
 
     public function index(Request $request)
     {
-        $disponible = $request->query('disponible');
-    
-        if ($disponible === 'oui') {
-            $articles = Article::where('qteStock', '>', 0)->get();
-        } elseif ($disponible === 'non') {
-            $articles = Article::where('qteStock', '=', 0)->get();
-        } else {
-            $articles = Article::all();
-        }
-    
-        if ($articles->isEmpty()) {
-            return response()->json([
-                'status' => 200,
-                'data' => null,
-                'message' => 'Aucun article trouvé',
-            ], 200);
-        }
-    
+       
+        $articles = $this->articleService->findByEtat($request->query('disponible'));
+
         return response()->json([
-            'status' => 200,
             'data' => $articles,
-            'message' => 'Articles trouvés',
-        ], 200);
+            'message' => $articles->isEmpty() ? 'Aucun article trouvé' : 'Articles trouvés',
+        ]);
     }
-    
+
     public function store(StoreArticleRequest $request)
     {
-        try {
-            // Crée un nouvel article avec les données validées
-            $article = Article::create($request->validated());
+        $article = $this->articleService->create($request->validated());
 
-            return response()->json([
-                'status' => 201,
-                'data' => $article,
-                'message' => 'Article enregistré avec succès',
-            ], 201);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 500,
-                'data' => null,
-                'message' => 'Une erreur est survenue lors de l\'enregistrement de l\'article',
-            ], 500);
-        }
+        return response()->json([
+            'data' => $article,
+            'message' => 'Article enregistré avec succès',
+        ]);
     }
 
     public function showById($id)
-{
-    $article = Article::find($id);
+    {
+        $article = $this->articleService->find($id);
 
-    if ($article) {
         return response()->json([
-            'status' => 200,
             'data' => $article,
             'message' => 'Article trouvé',
-        ], 200);
+        ]);
     }
 
-    return response()->json([
-        'status' => 411,
-        'data' => null,
-        'message' => 'Objet non trouvé',
-    ], 411);
-}
-public function showByLibelle(Request $request)
-{
-    $request->validate([
-        'libelle' => 'required|string',
-    ]);
+    public function showByLibelle(Request $request)
+    {
+        $article = $this->articleService->findByLibelle($request->input('libelle'));
 
-    $article = Article::where('libelle', $request->input('libelle'))->first();
-
-    if ($article) {
         return response()->json([
-            'status' => 200,
             'data' => $article,
             'message' => 'Article trouvé',
+        ]);
+    }
+
+    public function updateStock(StoreArticleRequest $request, $id)
+    {
+        // $article = $this->articleService->update($id, $request->validated()['qteStock']);
+
+        $article = $this->articleService->update($id, $request->validated());
+        
+
+        return response()->json([
+            'data' => $article,
+            'message' => 'Quantité en stock mise à jour',
+        ]);
+    }
+
+    public function bulkUpdateStock(BulkUpdateArticleRequest $request)
+    {
+        $validated = $request->validated();
+    
+        // Appel à la méthode `bulkUpdateStock` du service
+        $result = $this->articleService->bulkUpdateStock($validated['articles']);
+    
+        return response()->json([
+            'status' => 200,
+            'data' => [
+                'success' => $result['updated'],
+                'error' => $result['not_found'],
+            ],
+            'message' => count($result['not_found']) === 0 
+                ? 'Tous les articles ont été mis à jour avec succès.'
+                : 'Certains articles n\'ont pas pu être mis à jour car leurs ID n\'ont pas été trouvés.',
         ], 200);
     }
-
-    return response()->json([
-        'status' => 411,
-        'data' => null,
-        'message' => 'Objet non trouvé',
-    ], 411);
-}
-
-public function updateStock(StoreArticleRequest $request, $id)
-{
-    $validated = $request->validated();
-
-    $article = Article::find($id);
-
-    if (!$article) {
-        return response()->json([
-            'status' => 411,
-            'data' => null,
-            'message' => 'Objet non trouvé',
-        ], 411);
-    }
-
-    $article->qteStock = $validated['qteStock'];
-    $article->save();
-
-    return response()->json([
-        'status' => 200,
-        'data' => $article,
-        'message' => 'Quantité en stock mise à jour',
-    ], 200);
-}
-
-
-
-
-public function bulkUpdateStock(BulkUpdateArticleRequest $request)
-{
-    $validated = $request->validated();
-
-    $updatedArticles = [];
-    $notFoundArticles = [];
-
-    foreach ($validated['articles'] as $articleData) {
-        $article = Article::find($articleData['id']);
-
-        if ($article) {
-            $article->qteStock = $articleData['qteStock'];
-            $article->save();
-            $updatedArticles[] = $article;
-        } else {
-            $notFoundArticles[] = $articleData['id'];
-        }
-    }
-
-    return response()->json([
-        'status' => 200,
-        'data' => [
-            'success' => $updatedArticles,
-            'error' => $notFoundArticles,
-        ],
-        'message' => count($notFoundArticles) === 0 
-            ? 'Tous les articles ont été mis à jour avec succès.'
-            : 'Certains articles n\'ont pas pu être mis à jour car leurs ID n\'ont pas été trouvés.',
-    ], 200);
-}
-
-
+    
 }

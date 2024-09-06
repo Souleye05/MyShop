@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('password');
             $table->string('login')->unique();
+            $table->string('photo')->nullable();
             $table->boolean('status')->default(true);
             $table->foreignId('role_id')->nullable()->constrained()->onDelete('set null');
             $table->timestamps();

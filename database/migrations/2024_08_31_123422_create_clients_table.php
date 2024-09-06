@@ -13,7 +13,6 @@ class CreateClientsTable extends Migration
             $table->string('surnom')->unique();
             $table->string('telephone')->unique();
             $table->string('adresse')->nullable();
-            $table->string('photo')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // Un client peut avoir un compte utilisateur
             $table->timestamps();
         });

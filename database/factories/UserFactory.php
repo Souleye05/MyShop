@@ -27,6 +27,7 @@ class UserFactory extends Factory
             'last_name' => $this->faker->lastName,
             'password' => bcrypt('password'), // mot de passe par défaut haché
             'login' => $this->faker->unique()->userName,
+            'photo' => $this->faker->imageUrl(640, 480),
             'status' => $this->faker->boolean(80), // 80% de chances de retourner true (actif)
             'role_id' => \App\Models\Role::factory(), // Associe un rôle créé par une autre factory
         ];

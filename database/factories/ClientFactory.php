@@ -16,7 +16,6 @@ class ClientFactory extends Factory
             'surnom' => $this->faker->word,
             'telephone' => $this->faker->unique()->phoneNumber,
             'adresse' => $this->faker->address,
-            'photo' => $this->faker->imageUrl(640, 480, 'people'),
             'user_id' => User::factory()->create()->id, // Associe le client à un utilisateur
         ];
     }

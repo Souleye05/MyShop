@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
             'last_name' => 'User',
             'login' => 'admin',
             'password' => bcrypt('password'),
+            'photo' => 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
             'role_id' => $adminRole->id,
             'status' => true,
         ]);
@@ -27,6 +28,7 @@ class UserSeeder extends Seeder
             'last_name' => 'Doe',
             'login' => 'johndoe',
             'password' => bcrypt('password'),
+            'photo' => 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
             'role_id' => $userRole->id,
             'status' => true,
         ]);
