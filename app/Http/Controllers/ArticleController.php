@@ -22,40 +22,28 @@ class ArticleController extends Controller
        
         $articles = $this->articleService->findByEtat($request->query('disponible'));
 
-        return response()->json([
-            'data' => $articles,
-            'message' => $articles->isEmpty() ? 'Aucun article trouvé' : 'Articles trouvés',
-        ]);
+       return compact('articles');
     }
 
     public function store(StoreArticleRequest $request)
     {
         $article = $this->articleService->create($request->validated());
 
-        return response()->json([
-            'data' => $article,
-            'message' => 'Article enregistré avec succès',
-        ]);
+        return compact('article');
     }
 
     public function showById($id)
     {
         $article = $this->articleService->find($id);
 
-        return response()->json([
-            'data' => $article,
-            'message' => 'Article trouvé',
-        ]);
+        return compact('article');
     }
 
     public function showByLibelle(Request $request)
     {
         $article = $this->articleService->findByLibelle($request->input('libelle'));
 
-        return response()->json([
-            'data' => $article,
-            'message' => 'Article trouvé',
-        ]);
+        return compact('article');
     }
 
     public function updateStock(StoreArticleRequest $request, $id)
@@ -65,10 +53,7 @@ class ArticleController extends Controller
         $article = $this->articleService->update($id, $request->validated());
         
 
-        return response()->json([
-            'data' => $article,
-            'message' => 'Quantité en stock mise à jour',
-        ]);
+       return compact('article');
     }
 
     public function bulkUpdateStock(BulkUpdateArticleRequest $request)
@@ -78,16 +63,7 @@ class ArticleController extends Controller
         // Appel à la méthode `bulkUpdateStock` du service
         $result = $this->articleService->bulkUpdateStock($validated['articles']);
     
-        return response()->json([
-            'status' => 200,
-            'data' => [
-                'success' => $result['updated'],
-                'error' => $result['not_found'],
-            ],
-            'message' => count($result['not_found']) === 0 
-                ? 'Tous les articles ont été mis à jour avec succès.'
-                : 'Certains articles n\'ont pas pu être mis à jour car leurs ID n\'ont pas été trouvés.',
-        ], 200);
+        return compact('result');
     }
     
 }

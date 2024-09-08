@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Facades\ClientServiceFacade;
+use App\Http\Requests\FindByPhoneClientRequest;
 use App\Http\Requests\StoreClientRequest;
-use App\Models\Client;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
-use Spatie\QueryBuilder\QueryBuilder;
 
 class ClientController extends Controller
 {
@@ -17,201 +15,91 @@ class ClientController extends Controller
      */
     public function index(Request $request)
     {
-        try {
-            $clients = QueryBuilder::for(Client::class)
-                ->allowedFilters(['surnom', 'telephone', 'adresse'])
-                ->allowedSorts('surnom', 'telephone')
-                ->when($request->has('comptes'), function ($query) use ($request) {
-                    if ($request->input('comptes') === 'oui') {
-                        $query->whereNotNull('user_id');
-                    } elseif ($request->input('comptes') === 'non') {
-                        $query->whereNull('user_id');
-                    }
-                })
-                ->when($request->has('active'), function ($query) use ($request) {
-                    if ($request->input('active') === 'oui') {
-                        $query->whereHas('user', function ($query) {
-                            $query->where('status', true);
-                        });
-                    } elseif ($request->input('active') === 'non') {
-                        $query->whereHas('user', function ($query) {
-                            $query->where('status', false);
-                        });
-                    }
-                })
-                ->get();
-
-            if ($clients->isEmpty()) {
-                return response()->json([
-                    'status' => 200,
-                    'data' => null,
-                    'message' => 'Pas de clients'
-                ], 200);
-            }
-
-            return response()->json([
-                'status' => 200,
-                'data' => $clients,
-                'message' => 'Liste des clients'
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 500,
-                'data' => null,
-                'message' => 'Erreur lors de la récupération des clients: ' . $e->getMessage()
-            ], 500);
-        }
+        $clients = ClientServiceFacade::getAll($request);
+        return compact('clients');
     }
 
     /**
      * Trouver un client par numéro de téléphone.
      */
-    public function findByPhone(Request $request)
+    public function findByPhone(FindByPhoneClientRequest $request)
     {
-        $request->validate([
-            'telephone' => 'required|string|size:9' // Assurez-vous que la validation correspond à vos critères
-        ]);
+        $request->validated();
 
-        $client = Client::where('telephone', $request->input('telephone'))->first();
+        $response = ClientServiceFacade::findByPhone($request->validated());
 
-        if ($client) {
-            return response()->json([
-                'status' => 200,
-                'data' => $client,
-                'message' => 'Client trouvé'
-            ], 200);
-        }
-
-        return response()->json([
-            'status' => 404,
-            'data' => null,
-            'message' => 'Client non trouvé'
-        ], 404);
+        return compact('response');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreClientRequest $request): JsonResponse
-{
-    // Démarrer une transaction
-    DB::beginTransaction();
-
-    try {
-        // Créez le client
-        $client = Client::create($request->only(['surnom', 'telephone', 'adresse']));
-
-        // Vérifiez si les attributs de l'utilisateur sont présents dans la requête
-        if ($request->has('user')) {
-            // Créez l'utilisateur
-            $user = User::create([
-                'name' => $request->input('user.name'),
-                'last_name' => $request->input('user.last_name', ''), // Peut-être null ou une valeur par défaut
-                'password' => bcrypt($request->input('user.password')),
-                'login' => $request->input('user.login'),
-                'status' => true,
-            ]);
-
-            // Lier l'utilisateur au client
-            $client->user_id = $user->id;
-            $client->save();
+    public function store(StoreClientRequest $request)
+    {
+        try {
+            // Logique déléguée au service via la façade
+            $response = ClientServiceFacade::create($request->validated());
+    
+            return compact('response');
+    
+        } catch (\Exception $e) {
+            // Gestion des exceptions personnalisées
+            return response()->json([
+                'status' => 500,
+                'client' => null,
+                'message' => 'Erreur lors de l\'enregistrement du client: ' . $e->getMessage(),
+            ], 500);
         }
-
-        // Confirmer la transaction
-        DB::commit();
-
-        return response()->json([
-            'status' => 201,
-            'data' => $client->load('user'),
-            'message' => 'Client enregistré avec succès',
-        ], 201);
-
-    } catch (\Exception $e) {
-        // Annuler la transaction en cas d'erreur
-        DB::rollBack();
-
-        return response()->json([
-            'status' => 500,
-            'data' => null,
-            'message' => 'Erreur lors de l\'enregistrement du client: ' . $e->getMessage(),
-        ], 500);
     }
-}
-
+    
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(int $id)
     {
-        $client = Client::find($id);
+        $response = ClientServiceFacade::find($id);
 
-        if ($client) {
-            return response()->json([
-                'status' => 200,
-                'data' => $client->load('user'),
-                'message' => 'Client trouvé',
-            ], 200);
-        }
-
-        return response()->json([
-            'status' => 404,
-            'data' => null,
-            'message' => 'Client non trouvé',
-        ], 404);
+        return compact('response');
     }
 
-    public function listDettes($id){
-        $client = Client::with('dettes')->find($id);
-
-        if ($client) {
-            $dettes = $client->dettes;
-
-            return response()->json([
-                'status' => 200,
-                'data' => $dettes->isEmpty() ? null : ['client' => $client, 'dettes' => $dettes],
-                'message' => 'Client trouvé'
-            ], 200);
-        }
-
-        return response()->json([
-            'status' => 404,
-            'data' => null,
-            'message' => 'Client non trouvé'
-        ], 404);
-    }
-
-    public function showWithUser($id)
+    /**
+     * Lister les dettes d’un client.
+     */
+    public function listDettes(int $id)
     {
-        $client = Client::with('user')->find($id);
+        $response = ClientServiceFacade::listDettes($id);
 
-        if ($client && $client->user) {
-            return response()->json([
-                'status' => 200,
-                'data' => ['client' => $client, 'user' => $client->user],
-                'message' => 'Client trouvé'
-            ], 200);
-        }
-
-        return response()->json([
-            'status' => 411,
-            'data' => null,
-            'message' => 'Objet non trouvé'
-        ], 411);
+        return compact('response');
     }
+
+    /**
+     * Display the client with its associated user.
+     */
+    public function showWithUser(int $id)
+    {
+        $response = ClientServiceFacade::showWithUser($id);
+
+        return compact('response');
+    }
+
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, int $id)
     {
-        //
+        $response = ClientServiceFacade::update($id, $request->all());
+
+        return compact('response');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(int $id)
     {
-        //
+        $response = ClientServiceFacade::delete($id);
+
+        return compact('response');
     }
 }

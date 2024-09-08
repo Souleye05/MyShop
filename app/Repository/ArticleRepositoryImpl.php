@@ -1,6 +1,7 @@
 <?php
 namespace App\Repository;
 
+use App\Exceptions\ArticleNotFoundException;
 use App\Models\Article;
 use App\Repository\ArticleRepository;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class ArticleRepositoryImpl implements ArticleRepository
     {
         $article = Article::find($id);
         if (!$article) {
-            throw new \Exception('Article not found');
+            throw new ArticleNotFoundException();
         }
         return $article;
     }

@@ -9,6 +9,9 @@ use App\Services\ArticleService;
 use App\Services\ArticleServiceImpl;
 use App\Repository\ArticleRepository;
 use App\Repository\ArticleRepositoryImpl;
+use App\Repository\ClientRepository;
+use App\Repository\ClientRepositoryImpl;
+use App\Services\ClientServiceImpl;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +23,12 @@ class AppServiceProvider extends ServiceProvider
         //
         $this->app->bind(ArticleService::class, ArticleServiceImpl::class);
         $this->app->bind(ArticleRepository::class, ArticleRepositoryImpl::class);
+        $this->app->bind(ClientRepository::class, ClientRepositoryImpl::class);
+        $this->app->bind('ClientService', ClientServiceImpl::class);
+
+
+            
+        
     }
 
     /**
