@@ -2,72 +2,65 @@
 
 namespace App\Policies;
 
+use App\Models\Dette;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class UserPolicy
+class DettePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
         //
-        return $user->role->libelle === 'Admin';
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, User $model)
+    public function view(User $user, Dette $dette): bool
     {
         //
-        return $user->id === $model->id || $user->role->name === 'Admin';
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user)
+    public function create(User $user): bool
     {
         //
-        return $user->role->libelle === 'Admin';
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, User $model)
+    public function update(User $user, Dette $dette): bool
     {
         //
-        return $user->role->libelle === 'Admin';
-
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, User $model)
+    public function delete(User $user, Dette $dette): bool
     {
         //
-        return $user->role->libelle === 'Admin';
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, User $model)
-        {
+    public function restore(User $user, Dette $dette): bool
+    {
         //
-        return $user->role->libelle === 'Admin';
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, User $model)
+    public function forceDelete(User $user, Dette $dette): bool
     {
         //
-        return $user->role->libelle === 'Admin';
     }
 }

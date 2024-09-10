@@ -51,20 +51,26 @@ class ClientRepositoryImpl implements ClientRepository
         }
     }
 
-    public function findByPhone( $telephone)
+    public function findByPhone($telephone)
     {
         return Client::where('telephone', $telephone)->first();
     }
 
-    public function create( $data)
+    public function create($data)
     {
         return Client::create($data);
     }
 
-    public function find( $id)
+    public function find($id)
     {
         return Client::find($id);
     }
+    
+    public function findWithUser($id)
+{
+    return Client::with('user')->find($id);
+}
+
 
     public function update( $id,  $data)
     {

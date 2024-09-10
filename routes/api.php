@@ -3,6 +3,7 @@
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DetteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -25,7 +26,7 @@ Route::prefix('v1')->middleware(ApiResponseMiddleware::class)->group(function ()
         Route::post('/telephone', 'findByPhone');
         Route::get('/telephone', 'findByPhone');
         Route::post('/{id}/dettes', 'listDettes');
-        Route::post('/{id}/user', 'showWithUser');
+        Route::post('/{id}/user', 'findWithUser');
     });
 
     Route::controller(UserController::class)->prefix('users')->group(function (){
@@ -45,12 +46,12 @@ Route::prefix('v1')->middleware(ApiResponseMiddleware::class)->group(function ()
         Route::post('/stock', 'bulkUpdateStock');
     });
 
-    // Route::controller(DetteController::class)->prefix('dettes')->group(function (){
-    //     Route::get('/', 'index');
-    //     Route::post('/', 'store');
-    //     Route::get('/{id}', 'show');
-    //     Route::put('/{id}', 'update');
-    //     Route::delete('/{id}', 'destroy');
-    // });
+    Route::controller(DetteController::class)->prefix('dettes')->group(function (){
+        Route::get('/', 'index');
+        Route::post('/', 'store');
+        Route::get('/{id}', 'show');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
 
 });

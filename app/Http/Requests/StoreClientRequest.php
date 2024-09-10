@@ -28,7 +28,7 @@ class StoreClientRequest extends FormRequest
                 'regex:/^(77|78|76|70|75)[0-9]{7}$/'
             ],
             'adresse' => 'nullable|string',
-            'user.login' => 'nullable|required_with:user|string|unique:users,login',
+            'user.login' => 'nullable|required_with:user|email|unique:users,login',
             'user.password' => [
                 'nullable',
                 'required_with:user',

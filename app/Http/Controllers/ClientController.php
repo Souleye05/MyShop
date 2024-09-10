@@ -37,8 +37,7 @@ class ClientController extends Controller
     public function store(StoreClientRequest $request)
     {
         try {
-            // Logique déléguée au service via la façade
-            $response = ClientServiceFacade::create($request->validated());
+            $response = ClientServiceFacade::create($request);
     
             return compact('response');
     
@@ -78,7 +77,7 @@ class ClientController extends Controller
      */
     public function showWithUser(int $id)
     {
-        $response = ClientServiceFacade::showWithUser($id);
+        $response = ClientServiceFacade::findWithUser($id);
 
         return compact('response');
     }

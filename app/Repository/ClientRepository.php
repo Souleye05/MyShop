@@ -13,4 +13,5 @@ interface ClientRepository
     public function update($id, $data);
     public function delete($id);
     public function listDettes($id);
+    public function findWithUser($id);
 }
