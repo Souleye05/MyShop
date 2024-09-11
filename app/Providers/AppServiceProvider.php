@@ -22,6 +22,8 @@ use App\Repository\ClientRepositoryImpl;
 use App\Services\ClientServiceImpl;
 use App\Repository\UserRepositoryInterface;
 use App\Repository\UserRepositoryImpl;
+use App\Services\AuthenticationServiceInterface;
+use App\Services\AuthentificationPassport;
 use App\Services\UserServiceImpl;
 use App\Services\UserServiceInterface;
 use App\Services\QRCodeService;
@@ -41,7 +43,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('uploaderPhoto', uploaderPhoto::class); 
         $this->app->bind('QRCodeService', QRCodeService::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepositoryImpl::class);
+        $this->app->bind(AuthenticationServiceInterface::class, AuthentificationPassport::class);
         $this->app->bind(UserServiceInterface::class, UserServiceImpl::class);
+
     }
 
     protected $policies = [

@@ -7,6 +7,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use App\Events\ClientCreatedEvent;
 use App\Jobs\SendFidelityCardJob;
 use App\Jobs\UploadPhotoJob;
+use Illuminate\Support\Facades\Log;
 
 class HandleClientCreation
 {
@@ -31,6 +32,7 @@ class HandleClientCreation
          if ($client->user) {
             // Dispatcher le job pour l'upload de la photo
             if ($client->user->photo) {
+            Log::info($client->user->photo);
                 UploadPhotoJob::dispatch($client->user->photo, $client);
             }
 

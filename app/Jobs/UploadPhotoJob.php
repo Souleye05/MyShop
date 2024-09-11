@@ -30,5 +30,7 @@ class UploadPhotoJob implements ShouldQueue
         // Mise à jour du client avec l'URL de la photo
         $this->client->user->photo = $photoUrl;
         $this->client->save();
+
+        
     }
 }

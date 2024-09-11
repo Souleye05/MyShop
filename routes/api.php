@@ -11,11 +11,14 @@ use App\Http\Middleware\ApiResponseMiddleware;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware('auth:sanctum');
+})->middleware('auth:api');
+
+
+Route::post('/login', [AuthController::class,'login']);
+Route::post('/logout', [AuthController::class,'logout']);
 
 // Group all routes that need the ApiResponseMiddleware except login
 Route::prefix('v1')->middleware(ApiResponseMiddleware::class)->group(function (){
-    Route::post('/login', [AuthController::class,'login']); // Login route does not get ApiResponseMiddleware
 
     Route::controller(ClientController::class)->prefix('clients')->group(function (){
         Route::get('/', 'index');
